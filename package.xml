@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ropod_sim</name>
+  <version>0.1.0</version>
+  <description>Contains ROPOD description (xacro/urdf) and plugins for running simulations in gazebo</description>
+
+  <author email="dharmingeo@gmail.com">Dharmin B.</author>
+  <maintainer email="dharmingeo@gmail.com">Dharmin B.</maintainer>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+  </export>
+
+</package>

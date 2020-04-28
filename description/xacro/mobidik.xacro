@@ -1,0 +1,154 @@
+<?xml version='1.0'?>
+<robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       xmlns:xacro="http://ros.org/wiki/xacro"
+       name="mobidik" >
+
+    <xacro:arg name="namespace" default="ropod"/>
+    <xacro:property name="namespace" value="$(arg namespace)"/>
+
+    <xacro:property name="base_length" value="1.1" />
+    <xacro:property name="base_width" value="0.8" />
+    <xacro:property name="base_thickness" value="0.1" />
+    <xacro:property name="cargo_length" value="0.7" />
+    <xacro:property name="cargo_width" value="0.7" />
+    <xacro:property name="cargo_height" value="1.0" />
+    <xacro:property name="wheel_radius" value="0.04" />
+    <xacro:property name="wheel_mass" value="1.0" />
+    <xacro:property name="base_mass" value="8.0" />
+    <xacro:property name="inertia_base" value="0.5" />
+    <xacro:property name="inertia_wheels" value="0.001" />
+
+    <material name="red">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+    </material>
+
+    <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+    </material>
+
+    <material name="brown">
+        <color rgba="0.8 0.52 0.25 1.0"/>
+    </material>
+
+    <xacro:macro name="sphere_inertia" params="mass radius">
+        <inertial>
+            <mass value="${mass}" />
+            <inertia ixx="${(mass*0.4)*(radius*radius)}"
+                     iyy="${(mass*0.4)*(radius*radius)}"
+                     iyz="0.0" ixy="0.0" ixz="0.0"
+                     izz="${(mass*0.4)*(radius*radius)}" />
+        </inertial>
+    </xacro:macro>
+
+    <xacro:macro name="cart_wheel" params="name parent *origin mass radius material_name">
+        <joint name="${name}_joint" type="fixed">
+            <xacro:insert_block name="origin" />
+            <parent link="${parent}_link"/>
+            <child link="${name}_link"/>
+        </joint>
+        <link name="${name}_link">
+            <visual>
+                <geometry>
+                    <sphere radius="${radius}" />
+                </geometry>
+                <material name="${material_name}"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <sphere radius="${radius}" />
+                </geometry>
+            </collision>
+            <xacro:sphere_inertia mass="${mass}" radius="${radius}" />
+        </link>
+        <gazebo reference="${name}_link">
+            <material>Gazebo/Black</material>
+        </gazebo>
+    </xacro:macro>
+
+    <link name='base_link' />
+
+    <joint name='base_body_joint' type='fixed'>
+        <origin xyz='0.0 0.0 ${wheel_radius*2 + base_thickness*0.5}' rpy='0 0 0'/>
+        <parent link='base_link'/>
+        <child link='base_body_link'/>
+    </joint>
+
+    <link name='base_body_link'>
+        <visual>
+            <geometry>
+                <box size="${base_length} ${base_width} ${base_thickness}"/>
+            </geometry>
+            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <material name="red"/>
+        </visual>      
+        <collision>
+            <geometry>
+                <box size="${base_length} ${base_width} ${base_thickness}"/>
+            </geometry>
+            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+        </collision>      
+        <inertial>
+          <mass value="${base_mass}"/>
+          <inertia ixx="${inertia_base}" ixy="0.0" ixz="0.0" iyy="${inertia_base}" iyz="0.0" izz="${inertia_base}"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="base_body_link">
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+
+    <!-- ====== -->
+    <!-- WHEELS -->
+    <!-- ====== -->
+    <xacro:cart_wheel name="left_rear_wheel" parent="base_body" mass="${wheel_mass}"
+                       radius="${wheel_radius}" material_name="black">
+        <origin xyz='${-base_length*0.5 + wheel_radius} ${base_width*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+    </xacro:cart_wheel>
+
+    <xacro:cart_wheel name="right_rear_wheel" parent="base_body" mass="${wheel_mass}"
+                       radius="${wheel_radius}" material_name="black">
+        <origin xyz='${-base_length*0.5 + wheel_radius} ${-base_width*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+    </xacro:cart_wheel>
+
+    <xacro:cart_wheel name="left_front_wheel" parent="base_body" mass="${wheel_mass}"
+                       radius="${wheel_radius}" material_name="black">
+        <origin xyz='${base_length*0.5 - wheel_radius} ${base_width*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+    </xacro:cart_wheel>
+
+    <xacro:cart_wheel name="right_front_wheel" parent="base_body" mass="${wheel_mass}" 
+                       radius="${wheel_radius}" material_name="black">
+        <origin xyz='${base_length*0.5 - wheel_radius} ${-base_width*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+    </xacro:cart_wheel>
+
+
+    <!-- ===== -->
+    <!-- CARGO -->
+    <!-- ===== -->
+    <joint name='cargo_joint' type='fixed'>
+        <origin xyz='0.0 0.0 ${cargo_height*0.5 + base_thickness*0.5}' rpy='0 0 0'/>
+        <parent link='base_body_link'/>
+        <child link='cargo_link'/>
+    </joint>
+
+    <link name='cargo_link'>
+        <visual>
+            <geometry>
+                <box size='${cargo_length} ${cargo_width} ${cargo_height}'/>
+            </geometry>
+            <material name="brown"/>
+        </visual>
+        <collision>
+            <geometry>
+                <box size='${cargo_length} ${cargo_width} ${cargo_height}'/>
+            </geometry>
+        </collision>
+    </link>
+      
+    <gazebo reference="cargo_link">
+        <material>Gazebo/WoodPallet</material>
+    </gazebo>
+
+</robot>
