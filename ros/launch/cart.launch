@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="rate" default="5.0" />
+
+    <arg name="cart_init_x" default="-2.0" />
+    <arg name="cart_init_y" default="0.0" />
+    <arg name="cart_init_theta" default="0.0" />
+
+    <arg name="cart_model" default="mobidik"/>
+    <arg name="cart_id" default="cart_1"/>
+    <arg name="cart_model_path" default="$(find ropod_sim)/description/xacro/$(arg cart_model).xacro"/>
+
+    <arg name="cart_length" default="1.0"/>
+    <arg name="global_frame" default="map"/>
+
+	<group ns="$(arg cart_id)">
+        <param name="tf_prefix" value="$(arg cart_id)" />
+        <param name="robot_description"
+               command="rosrun xacro xacro --inorder '$(arg cart_model_path)'
+                        namespace:=$(arg cart_id)" />
+
+        <node pkg="joint_state_publisher" name="$(arg cart_id)_joint_state_publisher"
+              type="joint_state_publisher">
+            <param name="rate" value="10"/>
+        </node>
+
+        <node pkg="robot_state_publisher" name="$(arg cart_id)_robot_state_publisher"
+              type="robot_state_publisher">
+            <param name="publish_frequency" value="10"/>
+        </node>
+
+        <node pkg="gazebo_ros" name="$(arg cart_id)_spawn_urdf_model" type="spawn_model"
+              args="-param robot_description -urdf -model $(arg cart_id)
+                    -x $(arg cart_init_x) -y $(arg cart_init_y) -z 0.0 -Y $(arg cart_init_theta) " />
+
+        <node pkg="ropod_sim" name="$(arg cart_id)_manager" type="cart_manager" output="screen">
+            <remap from="~docked_robot" to="/$(arg cart_id)/docked_robot"/>
+            <param name="cart_id" type="str" value="$(arg cart_id)"/>
+            <param name="rate" type="double" value="$(arg rate)"/>
+            <param name="init_x" type="double" value="$(arg cart_init_x)"/>
+            <param name="init_y" type="double" value="$(arg cart_init_y)"/>
+            <param name="init_theta" type="double" value="$(arg cart_init_theta)"/>
+            <param name="global_frame" type="str" value="$(arg global_frame)"/>
+            <param name="frame" type="str" value="$(arg cart_id)/base_link"/>
+            <param name="cart_length" type="double" value="$(arg cart_length)"/>
+        </node>
+
+	</group>
+
+</launch>

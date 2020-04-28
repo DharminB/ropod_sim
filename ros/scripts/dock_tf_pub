@@ -1,0 +1,111 @@
+#! /usr/bin/env python
+
+from __future__ import print_function
+
+import tf
+import rospy
+
+from std_msgs.msg import Bool, String
+from gazebo_msgs.msg import ModelStates
+
+class DockTfPub(object):
+
+    """TODO"""
+
+    def __init__(self):
+        self._cart_length = rospy.get_param('~cart_length', 1.1)
+        self._robot_id = rospy.get_param('~robot_id', 'load')
+        self._ang_tolerance = rospy.get_param('~ang_tolerance', 0.5)
+        self._dist_tolerance = rospy.get_param('~dist_tolerance', 1.2)
+
+        self._docked = False
+        self._docked_cart_name = None
+        self._tf_br = tf.TransformBroadcaster()
+        self._pose_in_world = None
+        self._cart_pose_in_world = None
+        self._listening_to_model_states = False
+
+        rospy.Subscriber('~dock', Bool, self._dock_cb)
+        rospy.Subscriber('/gazebo/model_states', ModelStates, self._model_states_cb)
+        rospy.set_param('/' + self._robot_id + '/docked', False)
+        rospy.loginfo('Initialised')
+
+    def _dock_cb(self, msg):
+        self._docked = msg.data
+        rospy.set_param('/' + self._robot_id + '/docked', self._docked)
+
+        if self._docked:
+            self._listening_to_model_states = True
+            rospy.sleep(1.0) # get pose info from model states
+            self._listening_to_model_states = False
+            if self._pose_in_world is None or self._cart_pose_in_world is None:
+                return
+            cart_name = self._get_valid_cart()
+            if cart_name is None:
+                return
+            self._docked_cart_name = cart_name
+            self._pub_to_docked_cart(self._robot_id)
+        if not self._docked:
+            self._pub_to_docked_cart()
+            self._docked_cart_name = None
+
+    def _model_states_cb(self, msg):
+        if not self._listening_to_model_states:
+            return
+        self_index = msg.name.index(self._robot_id)
+        cart_names = [name for name in msg.name if 'cart' in name.lower()]
+        self._pose_in_world = self.pose_to_x_y_theta(msg.pose[self_index])
+        self._cart_pose_in_world = {}
+        for cart in cart_names:
+            cart_index = msg.name.index(cart)
+            self._cart_pose_in_world[cart] = self.pose_to_x_y_theta(msg.pose[cart_index])
+
+    def _get_valid_cart(self):
+        for cart_name, cart_pose in self._cart_pose_in_world.iteritems():
+            if abs(cart_pose[2] - self._pose_in_world[2]) < self._ang_tolerance:
+                dist = self.dist_between_point(cart_pose[:2], self._pose_in_world[:2])
+                print(dist)
+                if dist < self._dist_tolerance:
+                    return cart_name
+
+    def publish(self):
+        pos = [self._cart_length, 0.0, 0.0] if self._docked else [0.0, 0.0, 0.0]
+        ori = [0.0, 0.0, 0.0, 1.0]
+        self._tf_br.sendTransform(pos, ori, rospy.Time.now(),
+                                  self._robot_id+'/base_link_ground',
+                                  self._robot_id+'/base_link')
+
+    def _pub_to_docked_cart(self, string=''):
+        if self._docked_cart_name is None:
+            rospy.logwarn('Name of docked cart is not available')
+            return
+        pub = rospy.Publisher('/' + self._docked_cart_name + '/docked_robot', String, queue_size=1)
+        print('Publishing to /' + self._docked_cart_name + '/docked_robot')
+        rospy.sleep(0.5)
+        pub.publish(String(data=string))
+        rospy.sleep(3.0)
+        # pub.unregister()
+        # rospy.sleep(0.5)
+        print('Published')
+
+    def pose_to_x_y_theta(self, pose):
+        _, _, theta = tf.transformations.euler_from_quaternion(
+                (pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w))
+        return (pose.position.x, pose.position.y, theta)
+
+    def dist_between_point(self, p1, p2):
+        return ((p1[0]-p2[0])**2 + (p1[1]-p2[1])**2)**0.5
+
+if __name__ == "__main__":
+    rospy.init_node('dock_tf_pub')
+    PUB = DockTfPub()
+    RATE = rospy.Rate(rospy.get_param('~rate', 5.0))
+    try:
+        while not rospy.is_shutdown():
+            RATE.sleep()
+            PUB.publish()
+    except Exception as e:
+        print(str(e))
+    rospy.loginfo('Exiting')
+
+        

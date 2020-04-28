@@ -26,19 +26,14 @@
  */
 
 #include <boost/bind.hpp>
-#include <boost/thread.hpp>
-#include <map>
 
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 #include <sdf/sdf.hh>
 
 #include <geometry_msgs/Twist.h>
-#include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Bool.h>
-#include <ros/advertise_options.h>
-#include <ros/callback_queue.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
@@ -83,11 +78,6 @@ namespace gazebo
             double odometry_rate_;
             double docked_base_link_offset_;
 
-            // Custom Callback Queue
-            ros::CallbackQueue queue_;
-            boost::thread callback_queue_thread_;
-            void QueueThread();
-
             // command velocity callback
             void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& cmd_msg);
             void dockCallback(const std_msgs::Bool::ConstPtr& dock_msg);
@@ -95,7 +85,6 @@ namespace gazebo
             double x_;
             double y_;
             double rot_;
-            bool alive_;
             bool docked_;
             common::Time last_odom_publish_time_;
             common::Time last_cmd_msg_time_;
@@ -232,7 +221,6 @@ namespace gazebo
         x_ = 0;
         y_ = 0;
         rot_ = 0;
-        alive_ = true;
         docked_ = false;
 
         // Ensure that ROS has been initialized and subscribe to cmd_vel
@@ -246,32 +234,21 @@ namespace gazebo
         }
         nh_.reset(new ros::NodeHandle(robot_namespace_));
 
-        ROS_DEBUG_NAMED("ropod_control_plugin", "OCPlugin (%s) has started",
-                robot_namespace_.c_str());
-
         tf_prefix_ = tf::getPrefixParam(*nh_);
         transform_broadcaster_.reset(new tf::TransformBroadcaster());
 
-        // subscribe to the odometry topic
-        ros::SubscribeOptions so = ros::SubscribeOptions::create<geometry_msgs::Twist>(
-                command_topic_, 1,
-                boost::bind(&RopodControlPlugin::cmdVelCallback, this, _1),
-                ros::VoidPtr(), &queue_);
-
-        vel_sub_ = nh_->subscribe(so);
+        vel_sub_ = nh_->subscribe<geometry_msgs::Twist>(command_topic_, 1,
+                &RopodControlPlugin::cmdVelCallback, this);
         dock_sub_ = nh_->subscribe<std_msgs::Bool>(dock_topic_, 1,
                 &RopodControlPlugin::dockCallback, this);
         odometry_pub_ = nh_->advertise<nav_msgs::Odometry>(odometry_topic_, 1);
-
-        // start custom queue for diff drive
-        callback_queue_thread_ =
-            boost::thread(boost::bind(&RopodControlPlugin::QueueThread, this));
 
         // listen to the update event (broadcast every simulation iteration)
         update_connection_ =
             event::Events::ConnectWorldUpdateBegin(
                     boost::bind(&RopodControlPlugin::UpdateChild, this));
 
+        ROS_INFO("Ropod plugin loaded");
     }
 
     // Update the controller
@@ -312,11 +289,7 @@ namespace gazebo
     // Finalize the controller
     void RopodControlPlugin::FiniChild()
     {
-        alive_ = false;
-        queue_.clear();
-        queue_.disable();
         nh_->shutdown();
-        callback_queue_thread_.join();
     }
 
     void RopodControlPlugin::cmdVelCallback(const geometry_msgs::Twist::ConstPtr& cmd_msg)
@@ -336,15 +309,6 @@ namespace gazebo
     {
         docked_ = dock_msg->data;
         std::cout << "Docked: " << docked_ << std::endl;
-    }
-
-    void RopodControlPlugin::QueueThread()
-    {
-        static const double timeout = 0.01;
-        while (alive_ && nh_->ok())
-        {
-            queue_.callAvailable(ros::WallDuration(timeout));
-        }
     }
 
     void RopodControlPlugin::publishOdometry(double step_time)
@@ -387,12 +351,6 @@ namespace gazebo
         odom_.pose.pose.orientation.y = pose.Rot().Y();
         odom_.pose.pose.orientation.z = pose.Rot().Z();
         odom_.pose.pose.orientation.w = pose.Rot().W();
-        odom_.pose.covariance[0] = 0.00001;
-        odom_.pose.covariance[7] = 0.00001;
-        odom_.pose.covariance[14] = 1000000000000.0;
-        odom_.pose.covariance[21] = 1000000000000.0;
-        odom_.pose.covariance[28] = 1000000000000.0;
-        odom_.pose.covariance[35] = 0.001;
 
         // get velocity in /odom frame
         ignition::math::Vector3d linear;
