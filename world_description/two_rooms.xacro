@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+
+<!--
+ Preview:
+     ______7_________
+    |                |
+    |__  ________  __|
+    |3      | 2     4|
+   6|   0   |        |8
+    |   .   |1       |
+    |_______|________|
+          5
+-->
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="two_rooms">
+
+    <xacro:include filename="$(find ropod_sim)/world_description/wall.xacro" />
+
+    <link name="wall_0"/>
+
+    <xacro:wall name="wall_1" parent="wall_0" length="4.0">
+        <origin xyz="2.0 0.0 0.0" rpy="0.0 0.0 ${pi/2}"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_2" parent="wall_0" length="4.0">
+        <origin xyz="2.0 2.0 0.0" rpy="0.0 0.0 0.0"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_3" parent="wall_0" length="1.0">
+        <origin xyz="-1.5 2.0 0.0" rpy="0.0 0.0 0.0"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_4" parent="wall_0" length="1.0">
+        <origin xyz="5.5 2.0 0.0" rpy="0.0 0.0 0.0"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_5" parent="wall_0" length="8.0">
+        <origin xyz="2.0 -2.0 0.0" rpy="0.0 0.0 0.0"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_6" parent="wall_0" length="6.0">
+        <origin xyz="-2.0 1.0 0.0" rpy="0.0 0.0 ${pi/2}"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_7" parent="wall_0" length="8.0">
+        <origin xyz="2.0 4.0 0.0" rpy="0.0 0.0 0.0"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_8" parent="wall_0" length="6.0">
+        <origin xyz="6.0 1.0 0.0" rpy="0.0 0.0 ${pi/2}"/>
+    </xacro:wall>
+
+</robot>

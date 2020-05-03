@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<!--
+ Preview:
+     _______1________
+    |                |
+    |                |
+    |       0        |
+   3|       .        |4
+    |                |
+    |________________|
+            2
+-->
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="hall">
+
+    <xacro:include filename="$(find ropod_sim)/world_description/wall.xacro" />
+
+    <link name="wall_0"/>
+
+    <xacro:wall name="wall_1" parent="wall_0" length="10.0">
+        <origin xyz="0.0 4.0 0.0" rpy="0.0 0.0 0.0"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_2" parent="wall_0" length="10.0">
+        <origin xyz="0.0 -4.0 0.0" rpy="0.0 0.0 0.0"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_3" parent="wall_0" length="8.0">
+        <origin xyz="-5.0 0.0 0.0" rpy="0.0 0.0 ${pi/2}"/>
+    </xacro:wall>
+
+    <xacro:wall name="wall_4" parent="wall_0" length="8.0">
+        <origin xyz="5.0 0.0 0.0" rpy="0.0 0.0 ${pi/2}"/>
+    </xacro:wall>
+
+</robot>

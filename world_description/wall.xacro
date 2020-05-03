@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+
+<root xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- density of concrete (kg/m^3) -->
+    <xacro:property name="density" value="2100" />
+    <xacro:property name="default_width" value="0.1" />
+    <xacro:property name="default_height" value="1.0" />
+
+    <material name="grey">
+        <color rgba="0.4 0.4 0.4 1.0"/>
+    </material>
+
+    <xacro:macro name="cuboid_inertia" params="length width height density:=^">
+        <inertial>
+            <mass value="${density*length*width*height}" />
+            <inertia ixx="${(density*length*width*height/12)*(width*width + height*height)}"
+                     iyy="${(density*length*width*height/12)*(height*height + length*length)}"
+                     iyz="0.0" ixy="0.0" ixz="0.0"
+                     izz="${(density*length*width*height/12)*(width*width + length*length)}" />
+        </inertial>
+    </xacro:macro>
+
+    <xacro:macro name="wall" params="name parent *origin length width:=${default_width} height:=${default_height}">
+        <joint name="joint_${name}" type="fixed">
+            <xacro:insert_block name="origin" />
+            <parent link="${parent}"/>
+            <child link="${name}"/>
+        </joint>
+        <link name="${name}">
+            <visual>
+                <origin xyz="0 0 0"/>
+                <geometry>
+                    <box size="${length} ${width} ${height}" /> 
+                </geometry>
+                <material name="grey"/>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0"/>
+                <geometry>
+                    <box size="${length} ${width} ${height}" /> 
+                </geometry>
+            </collision>
+            <xacro:cuboid_inertia length="${length}" width="${width}" height="${height}" />
+        </link>
+        <gazebo reference="${name}">
+            <material>Gazebo/White</material>
+            <selfCollide>false</selfCollide>
+        </gazebo>
+    </xacro:macro>
+
+</root>
