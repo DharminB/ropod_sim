@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="cart_length" default="1.1"/>
+    <arg name="robot_id" value="load" />
+
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="debug" default="false"/>
+    <arg name="start_rviz" default="true"/>
+
+    <arg name="global_frame" default="/$(arg robot_id)/odom"/>
+
+    <arg name="world_model_name" default="hall"/>
+
+    <!-- Gazebo server -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="gui" value="$(arg gui)" />
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    </include>
+
+    <!-- World -->
+    <group>
+        <arg name="world_model"
+             default="$(find ropod_sim)/world_description/$(arg world_model_name).xacro"/>
+        <param name="world_description"
+               command="rosrun xacro xacro --inorder '$(arg world_model)'" />
+
+        <!-- spawn uploaded world model -->
+        <node pkg="gazebo_ros" name="gazebo_world_model" type="spawn_model"
+              respawn="false" output="screen"
+              args="-urdf -param world_description -model world -x 0.0 -y 0.0 -z 0.0" />
+    </group>
+
+    <!-- Cart -->
+    <include file="$(find ropod_sim)/ros/launch/cart.launch">
+        <arg name="cart_model" value="mobidik"/>
+        <arg name="cart_id" value="cart_1"/>
+        <arg name="cart_init_x" value="-2.0" />
+        <arg name="cart_init_y" value="0.0" />
+        <arg name="cart_init_theta" value="0.0" />
+        <arg name="cart_length" value="$(arg cart_length)" />
+        <arg name="global_frame" value="$(arg global_frame)" />
+    </include>
+
+    <!-- Robot -->
+    <include file="$(find ropod_sim)/ros/launch/ropod.launch">
+        <arg name="model" value="ropod"/>
+        <arg name="robot_id" value="$(arg robot_id)" />
+        <arg name="init_x" value="0.0" />
+        <arg name="init_y" value="0.0" />
+        <arg name="init_theta" value="0.0" />
+        <arg name="cart_length" value="$(arg cart_length)" />
+    </include>
+
+    <!-- RViz -->
+    <group if="$(arg start_rviz)">
+        <node pkg="rviz" type="rviz" name="ropod_sim_rviz"
+              args="-d $(find ropod_sim)/ros/config/example.rviz" />
+    </group>
+
+</launch>

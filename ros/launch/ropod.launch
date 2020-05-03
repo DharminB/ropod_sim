@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="rate" default="5.0" />
+
+    <arg name="init_x" default="0.0" />
+    <arg name="init_y" default="0.0" />
+    <arg name="init_theta" default="0.0" />
+    <arg name="robot_id" default="load" />
+
+    <arg name="model" default="ropod"/>
+    <arg name="model_path" default="$(find ropod_sim)/description/xacro/$(arg model).xacro"/>
+
+    <arg name="cart_length" default="1.1"/>
+
+    <!-- Load the robot description from the urdf model -->
+	<group ns="$(arg robot_id)">
+        <param name="tf_prefix" value="$(arg robot_id)" />
+        <param name="robot_description"
+               command="rosrun xacro xacro --inorder '$(arg model_path)'
+                        namespace:=$(arg robot_id) cart_length:=$(arg cart_length)" />
+
+        <node pkg="joint_state_publisher" name="joint_state_publisher"
+              type="joint_state_publisher">
+            <param name="rate" value="10"/>
+        </node>
+
+        <node pkg="robot_state_publisher" name="robot_state_publisher"
+              type="robot_state_publisher">
+            <param name="publish_frequency" value="10"/>
+        </node>
+
+        <!-- Spawn the robot using the arguments and robot description -->
+        <node pkg="gazebo_ros" name="spawn_urdf_model" type="spawn_model"
+              args="-param robot_description -urdf -model $(arg robot_id)
+                    -x $(arg init_x) -y $(arg init_y) -z 0.0 -Y $(arg init_theta)" />
+
+        <node pkg="ropod_sim" name="dock_tf_pub" type="dock_tf_pub" output="screen">
+            <remap from="~dock" to="/$(arg robot_id)/dock"/>
+            <param name="robot_id" type="str" value="$(arg robot_id)"/>
+            <param name="rate" type="double" value="$(arg rate)"/>
+            <param name="cart_length" type="double" value="$(arg cart_length)"/>
+        </node>
+	</group>
+</launch>
