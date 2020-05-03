@@ -18,7 +18,7 @@
     <xacro:property name="inertia_base" value="0.5" />
     <xacro:property name="inertia_wheels" value="0.001" />
 
-    <xacro:include filename="$(find ropod_description)/xacro/hokuyo.xacro" />
+    <xacro:include filename="$(find ropod_sim)/description/xacro/hokuyo.xacro" />
 
     <material name="silver">
         <color rgba="0.6 0.6 0.6 1.0"/>

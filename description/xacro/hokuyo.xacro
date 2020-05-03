@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
 <root xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
-       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
-       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
-       xmlns:xacro="http://ros.org/wiki/xacro">
+      xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+      xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+      xmlns:xacro="http://ros.org/wiki/xacro">
 
     <xacro:macro name="hokuyo" params="name parent *origin namespace ros_topic update_rate min_angle max_angle">
         <joint name="${name}_joint" type="fixed">
@@ -22,7 +22,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://ropod_description/meshes/hokuyo.dae"/>
+                    <mesh filename="package://ropod_sim/description/meshes/hokuyo.dae"/>
                 </geometry>
             </visual>
 
