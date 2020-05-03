@@ -7,3 +7,9 @@ plugins and example launch files.
 
 # ROPOD docking to mobidik cart and undocking
 ![move dock move undock](docs/ropod_sim.gif)
+
+# Usage
+
+```
+roslaunch ropod_sim example.launch
+```
