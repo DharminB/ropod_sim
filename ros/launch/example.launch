@@ -13,6 +13,9 @@
 
     <arg name="world_model_name" default="hall"/>
 
+    <arg name="spawn_robot" default="true"/>
+    <arg name="spawn_cart" default="true"/>
+
     <!-- Gazebo server -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="debug" value="$(arg debug)" />
@@ -35,7 +38,7 @@
     </group>
 
     <!-- Cart -->
-    <include file="$(find ropod_sim)/ros/launch/cart.launch">
+    <include file="$(find ropod_sim)/ros/launch/cart.launch" if="$(arg spawn_cart)">
         <arg name="cart_model" value="mobidik"/>
         <arg name="cart_id" value="cart_1"/>
         <arg name="cart_init_x" value="-2.0" />
@@ -46,7 +49,7 @@
     </include>
 
     <!-- Robot -->
-    <include file="$(find ropod_sim)/ros/launch/ropod.launch">
+    <include file="$(find ropod_sim)/ros/launch/ropod.launch" if="$(arg spawn_robot)">
         <arg name="model" value="ropod"/>
         <arg name="robot_id" value="$(arg robot_id)" />
         <arg name="init_x" value="0.0" />
