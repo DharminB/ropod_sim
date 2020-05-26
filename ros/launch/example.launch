@@ -7,7 +7,9 @@
     <arg name="use_sim_time" default="true"/>
     <arg name="gui" default="true"/>
     <arg name="debug" default="false"/>
+
     <arg name="start_rviz" default="true"/>
+    <arg name="rviz_config" default="$(find ropod_sim)/ros/config/example.rviz"/>
 
     <arg name="global_frame" default="/$(arg robot_id)/odom"/>
 
@@ -61,7 +63,7 @@
     <!-- RViz -->
     <group if="$(arg start_rviz)">
         <node pkg="rviz" type="rviz" name="ropod_sim_rviz"
-              args="-d $(find ropod_sim)/ros/config/example.rviz" />
+              args="-d $(arg rviz_config)" />
     </group>
 
 </launch>
