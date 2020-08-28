@@ -127,7 +127,7 @@
     <!-- LASER -->
     <!-- ===== -->
     <xacro:hokuyo name="front_laser" parent="base_body" namespace="${namespace}"
-                  ros_topic="scan" update_rate="20" min_angle="-1.57" max_angle="1.57">
+                  ros_topic="scan" update_rate="20" min_angle="-2.36" max_angle="2.36">
         <origin xyz='0.25 0.0 0.08' rpy='0 0 0'/>
     </xacro:hokuyo>
 
