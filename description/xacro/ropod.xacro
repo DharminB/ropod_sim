@@ -59,6 +59,8 @@
             <xacro:sphere_inertia mass="${mass}" radius="${radius}" />
         </link>
         <gazebo reference="${name}_link">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
             <material>Gazebo/Black</material>
         </gazebo>
     </xacro:macro>
@@ -166,7 +168,7 @@
         </visual>
         <collision>
             <geometry>
-                <box size='0.2 0.3 0.1'/>
+                <box size='0.01 0.01 0.01'/>
             </geometry>
         </collision>
     </link>
