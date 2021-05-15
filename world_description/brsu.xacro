@@ -1140,36 +1140,36 @@
     </xacro:wall>
 
     <xacro:wall name="wall_277" parent="wall_0" length="1.5" width="0.41" height="0.5">
-        <origin xyz="-51.53 8.08 0.0" rpy="0.0 0.0 0.0"/>
+        <origin xyz="-51.53 8.08 -0.25" rpy="0.0 0.0 0.0"/>
     </xacro:wall>
 
     <xacro:wall name="wall_277a" parent="wall_0" length="1.2" width="0.41" height="0.5">
-        <origin xyz="-50.25 8.15 0.0" rpy="0.0 0.0 0.12"/>
+        <origin xyz="-50.25 8.15 -0.25" rpy="0.0 0.0 0.12"/>
     </xacro:wall>
 
     <xacro:wall name="wall_277b" parent="wall_0" length="2.50" width="0.41" height="0.5">
-        <origin xyz="-48.53 8.39 0.0" rpy="0.0 0.0 -2.98"/>
+        <origin xyz="-48.53 8.39 -0.25" rpy="0.0 0.0 -2.98"/>
     </xacro:wall>
 
     <xacro:wall name="wall_278" parent="wall_0" length="3.1364687911674567" width="0.42" height="0.5">
-        <origin xyz="-52.1407795722771 6.728201739722863 0.0" rpy="0.0 0.0 1.5439561315145782"/>
+        <origin xyz="-52.1407795722771 6.728201739722863 -0.25" rpy="0.0 0.0 1.5439561315145782"/>
     </xacro:wall>
 
     <xacro:wall name="wall_279" parent="wall_0" length="1.60" width="0.41" height="0.5">
-        <origin xyz="-51.60 5.36 0.0" rpy="0.0 0.0 -3.14"/>
+        <origin xyz="-51.60 5.36 -0.25" rpy="0.0 0.0 -3.14"/>
     </xacro:wall>
 
     <xacro:wall name="wall_279a" parent="wall_0" length="1.55" width="0.41" height="0.5">
-        <origin xyz="-50.07 5.44 0.0" rpy="0.0 0.0 -3.04"/>
+        <origin xyz="-50.07 5.44 -0.25" rpy="0.0 0.0 -3.04"/>
     </xacro:wall>
 
     <xacro:wall name="wall_279b" parent="wall_0" length="2.80" width="0.41" height="0.5">
-        <origin xyz="-48.03 5.89 0.0" rpy="0.0 0.0 -2.86"/>
+        <origin xyz="-48.03 5.89 -0.25" rpy="0.0 0.0 -2.86"/>
     </xacro:wall>
 
     <!-- staircase -->
     <xacro:wall name="wall_279c" parent="wall_0" length="2.3" width="0.4" height="0.5">
-        <origin xyz="-47.2 7.39 0.0" rpy="0.0 0.0 1.85"/>
+        <origin xyz="-47.2 7.39 -0.25" rpy="0.0 0.0 1.85"/>
     </xacro:wall>
     <!-- end of staircase -->
 
@@ -1347,7 +1347,7 @@
 
     <!-- staircase -->
     <xacro:wall name="staircase_entrance" parent="wall_0" length="2.5" width="0.4" height="0.5">
-        <origin xyz="-0.9 18.59 0.0" rpy="0.0 0.0 1.57"/>
+        <origin xyz="-0.9 18.59 -0.25" rpy="0.0 0.0 1.57"/>
     </xacro:wall>
     <!-- end of staircase -->
 
