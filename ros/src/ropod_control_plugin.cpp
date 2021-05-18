@@ -62,7 +62,6 @@ namespace gazebo
             boost::shared_ptr<ros::NodeHandle> nh_;
             ros::Publisher odometry_pub_;
             ros::Subscriber vel_sub_;
-            ros::Subscriber dock_sub_;
             boost::shared_ptr<tf::TransformBroadcaster> transform_broadcaster_;
             nav_msgs::Odometry odom_;
             std::string tf_prefix_;
@@ -71,21 +70,17 @@ namespace gazebo
 
             std::string robot_namespace_;
             std::string command_topic_;
-            std::string dock_topic_;
             std::string odometry_topic_;
             std::string odometry_frame_;
             std::string robot_base_frame_;
             double odometry_rate_;
-            double docked_base_link_offset_;
 
             // command velocity callback
             void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& cmd_msg);
-            void dockCallback(const std_msgs::Bool::ConstPtr& dock_msg);
 
             double x_;
             double y_;
             double rot_;
-            bool docked_;
             common::Time last_odom_publish_time_;
             common::Time last_cmd_msg_time_;
             ignition::math::Pose3d last_odom_pose_;
@@ -136,18 +131,6 @@ namespace gazebo
             command_topic_ = sdf->GetElement("commandTopic")->Get<std::string>();
         }
 
-        dock_topic_ = "dock";
-        if (!sdf->HasElement("dockTopic"))
-        {
-            ROS_WARN_NAMED("ropod_control_plugin", "RopodControlPlugin (ns = %s) missing <dockTopic>, "
-                    "defaults to \"%s\"",
-                    robot_namespace_.c_str(), dock_topic_.c_str());
-        }
-        else
-        {
-            dock_topic_ = sdf->GetElement("dockTopic")->Get<std::string>();
-        }
-
         odometry_topic_ = "odom";
         if (!sdf->HasElement("odometryTopic"))
         {
@@ -172,7 +155,7 @@ namespace gazebo
             odometry_frame_ = sdf->GetElement("odometryFrame")->Get<std::string>();
         }
 
-        robot_base_frame_ = "base_footprint";
+        robot_base_frame_ = "base_link";
         if (!sdf->HasElement("robotBaseFrame"))
         {
             ROS_WARN_NAMED("ropod_control_plugin", "RopodControlPlugin (ns = %s) missing <robotBaseFrame>, "
@@ -196,19 +179,6 @@ namespace gazebo
             odometry_rate_ = sdf->GetElement("odometryRate")->Get<double>();
         }
 
-        docked_base_link_offset_ = 1.0;
-        if (!sdf->HasElement("dockedBaseLinkOffset"))
-        {
-            ROS_WARN_NAMED("ropod_control_plugin", "RopodControlPlugin (ns = %s) missing <dockedBaseLinkOffset>, "
-                    "defaults to \"%f\"",
-                    robot_namespace_.c_str(), docked_base_link_offset_);
-        }
-        else
-        {
-            docked_base_link_offset_ = sdf->GetElement("dockedBaseLinkOffset")->Get<double>();
-        }
-
-
 #if GAZEBO_MAJOR_VERSION >= 8
         last_odom_publish_time_ = parent_->GetWorld()->SimTime();
         last_cmd_msg_time_ = parent_->GetWorld()->SimTime();
@@ -221,7 +191,6 @@ namespace gazebo
         x_ = 0;
         y_ = 0;
         rot_ = 0;
-        docked_ = false;
 
         // Ensure that ROS has been initialized and subscribe to cmd_vel
         if (!ros::isInitialized())
@@ -239,8 +208,6 @@ namespace gazebo
 
         vel_sub_ = nh_->subscribe<geometry_msgs::Twist>(command_topic_, 1,
                 &RopodControlPlugin::cmdVelCallback, this);
-        dock_sub_ = nh_->subscribe<std_msgs::Bool>(dock_topic_, 1,
-                &RopodControlPlugin::dockCallback, this);
         odometry_pub_ = nh_->advertise<nav_msgs::Odometry>(odometry_topic_, 1);
 
         // listen to the update event (broadcast every simulation iteration)
@@ -297,7 +264,7 @@ namespace gazebo
         boost::mutex::scoped_lock scoped_lock(lock);
         rot_ = cmd_msg->angular.z;
         x_ = cmd_msg->linear.x;
-        y_ = (!docked_) ? cmd_msg->linear.y : (rot_ * docked_base_link_offset_);
+        y_ = cmd_msg->linear.y;
 #if GAZEBO_MAJOR_VERSION >= 8
         last_cmd_msg_time_ = parent_->GetWorld()->SimTime();
 #else
@@ -305,21 +272,15 @@ namespace gazebo
 #endif
     }
 
-    void RopodControlPlugin::dockCallback(const std_msgs::Bool::ConstPtr& dock_msg)
-    {
-        docked_ = dock_msg->data;
-        std::cout << "Docked: " << docked_ << std::endl;
-    }
-
     void RopodControlPlugin::publishOdometry(double step_time)
     {
 
         ros::Time current_time = ros::Time::now();
         std::string odom_frame = tf::resolve(tf_prefix_, odometry_frame_);
-        std::string base_footprint_frame =
+        std::string base_link_frame =
             tf::resolve(tf_prefix_, robot_base_frame_);
 
-        // getting data for base_footprint to odom transform
+        // getting data for base_link to odom transform
 #if GAZEBO_MAJOR_VERSION >= 8
         ignition::math::Pose3d pose = this->parent_->WorldPose();
 #else
@@ -329,19 +290,10 @@ namespace gazebo
         tf::Quaternion qt(pose.Rot().X(), pose.Rot().Y(), pose.Rot().Z(), pose.Rot().W());
         tf::Vector3    vt(pose.Pos().X(), pose.Pos().Y(), pose.Pos().Z());
 
-        if (docked_)
-        {
-            float yaw = pose.Rot().Yaw();
-            float delta_x = (cos(yaw) * -docked_base_link_offset_);
-            float delta_y = (sin(yaw) * -docked_base_link_offset_);
-            vt.setX(vt.getX() + delta_x);
-            vt.setY(vt.getY() + delta_y);
-        }
-
-        tf::Transform base_footprint_to_odom(qt, vt);
+        tf::Transform base_link_to_odom(qt, vt);
         transform_broadcaster_->sendTransform(
-                tf::StampedTransform(base_footprint_to_odom, current_time,
-                                     odom_frame, base_footprint_frame));
+                tf::StampedTransform(base_link_to_odom, current_time,
+                                     odom_frame, base_link_frame));
 
         // publish odom topic
         odom_.pose.pose.position.x = pose.Pos().X();
@@ -372,14 +324,14 @@ namespace gazebo
         }
         last_odom_pose_ = pose;
 
-        // convert velocity to child_frame_id (aka base_footprint)
+        // convert velocity to child_frame_id (aka base_link)
         float yaw = pose.Rot().Yaw();
         odom_.twist.twist.linear.x = cosf(yaw) * linear.X() + sinf(yaw) * linear.Y();
         odom_.twist.twist.linear.y = cosf(yaw) * linear.Y() - sinf(yaw) * linear.X();
 
         odom_.header.stamp = current_time;
         odom_.header.frame_id = odom_frame;
-        odom_.child_frame_id = base_footprint_frame;
+        odom_.child_frame_id = base_link_frame;
 
         odometry_pub_.publish(odom_);
     }

@@ -1,14 +1,8 @@
 <?xml version='1.0'?>
-<robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
-       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
-       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
-       xmlns:xacro="http://ros.org/wiki/xacro"
-       name="ropod" >
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="ropod" >
 
     <xacro:property name="namespace" value="$(arg namespace)"/>
     <xacro:arg name="namespace" default="ropod"/>
-    <xacro:property name="cart_length" value="$(arg cart_length)"/>
-    <xacro:arg name="cart_length" default="1.1"/>
 
     <xacro:property name="base_length" value="0.6" />
     <xacro:property name="base_thickness" value="0.1" />
@@ -65,11 +59,11 @@
         </gazebo>
     </xacro:macro>
 
-    <link name='base_link_ground' />
+    <link name='base_link' />
 
     <joint name='base_body_joint' type='fixed'>
         <origin xyz='0.0 0.0 ${wheel_radius*2 + base_thickness*0.5}' rpy='0 0 0'/>
-        <parent link='base_link_ground'/>
+        <parent link='base_link'/>
         <child link='base_body_link'/>
     </joint>
 
@@ -140,12 +134,10 @@
     <gazebo>
         <plugin name="${namespace}_controller" filename="libropod_control_plugin.so">
             <commandTopic>/${namespace}/cmd_vel</commandTopic>
-            <dockTopic>/${namespace}/dock</dockTopic>
             <odometryTopic>/${namespace}/odom</odometryTopic>
             <odometryFrame>/${namespace}/odom</odometryFrame>
             <odometryRate>20.0</odometryRate>
             <robotBaseFrame>/${namespace}/base_link</robotBaseFrame>
-            <dockedBaseLinkOffset>${cart_length}</dockedBaseLinkOffset>
         </plugin>
     </gazebo>
 
