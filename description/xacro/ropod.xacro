@@ -119,6 +119,31 @@
     </xacro:ropod_wheel>
 
 
+    <!-- ======= -->
+    <!-- GRIPPER -->
+    <!-- ======= -->
+    <joint name='gripper_joint' type='fixed'>
+        <origin xyz='${-base_length*0.5} 0.0 ${wheel_radius*2}' rpy='0 0 0'/>
+        <parent link='base_link'/>
+        <child link='gripper_link'/>
+    </joint>
+
+    <link name='gripper_link'>
+        <visual>
+            <geometry>
+                <box size="${0.01} ${0.01} ${0.01}"/>
+            </geometry>
+            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <material name="silver"/>
+        </visual>      
+        <collision>
+            <geometry>
+                <box size="${0.01} ${0.01} ${0.01}"/>
+            </geometry>
+            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+        </collision>      
+    </link>
+    
     <!-- ===== -->
     <!-- LASER -->
     <!-- ===== -->

@@ -10,13 +10,12 @@
     <arg name="cart_id" default="cart_1"/>
     <arg name="cart_model_path" default="$(find ropod_sim)/description/xacro/$(arg cart_model).xacro"/>
 
-    <arg name="cart_length" default="1.0"/>
     <arg name="global_frame" default="map"/>
 
 	<group ns="$(arg cart_id)">
         <param name="tf_prefix" value="$(arg cart_id)" />
         <param name="robot_description"
-               command="rosrun xacro xacro --inorder '$(arg cart_model_path)'
+               command="rosrun xacro xacro '$(arg cart_model_path)'
                         namespace:=$(arg cart_id)" />
 
         <node pkg="joint_state_publisher" name="$(arg cart_id)_joint_state_publisher"
@@ -42,7 +41,6 @@
             <param name="init_theta" type="double" value="$(arg cart_init_theta)"/>
             <param name="global_frame" type="str" value="$(arg global_frame)"/>
             <param name="frame" type="str" value="$(arg cart_id)/base_link"/>
-            <param name="cart_length" type="double" value="$(arg cart_length)"/>
         </node>
 
 	</group>

@@ -1,9 +1,5 @@
 <?xml version='1.0'?>
-<robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
-       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
-       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
-       xmlns:xacro="http://ros.org/wiki/xacro"
-       name="mobidik" >
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="mobidik" >
 
     <xacro:arg name="namespace" default="ropod"/>
     <xacro:property name="namespace" value="$(arg namespace)"/>
@@ -123,6 +119,31 @@
         <origin xyz='${base_length*0.5 - wheel_radius} ${-base_width*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
     </xacro:cart_wheel>
 
+    <!-- ======= -->
+    <!-- GRIPPER -->
+    <!-- ======= -->
+    <joint name='gripping_joint' type='fixed'>
+        <origin xyz='${base_length*0.5} 0.0 ${wheel_radius*2}' rpy='0 0 0'/>
+        <parent link='base_link'/>
+        <child link='gripping_link'/>
+    </joint>
+
+    <link name='gripping_link'>
+        <visual>
+            <geometry>
+                <box size="${0.01} ${0.01} ${0.01}"/>
+            </geometry>
+            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <material name="red"/>
+        </visual>      
+        <collision>
+            <geometry>
+                <box size="${0.01} ${0.01} ${0.01}"/>
+            </geometry>
+            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+        </collision>      
+    </link>
+    
 
     <!-- ===== -->
     <!-- CARGO -->

@@ -10,14 +10,12 @@
     <arg name="model" default="ropod"/>
     <arg name="model_path" default="$(find ropod_sim)/description/xacro/$(arg model).xacro"/>
 
-    <arg name="cart_length" default="1.1"/>
-
     <!-- Load the robot description from the urdf model -->
 	<group ns="$(arg robot_id)">
         <param name="tf_prefix" value="$(arg robot_id)" />
         <param name="robot_description"
-               command="rosrun xacro xacro --inorder '$(arg model_path)'
-                        namespace:=$(arg robot_id) cart_length:=$(arg cart_length)" />
+               command="rosrun xacro xacro '$(arg model_path)'
+                        namespace:=$(arg robot_id)" />
 
         <node pkg="joint_state_publisher" name="joint_state_publisher"
               type="joint_state_publisher">
@@ -34,11 +32,10 @@
               args="-param robot_description -urdf -model $(arg robot_id)
                     -x $(arg init_x) -y $(arg init_y) -z 0.0 -Y $(arg init_theta)" />
 
-        <node pkg="ropod_sim" name="dock_tf_pub" type="dock_tf_pub" output="screen">
+        <node pkg="ropod_sim" name="dock_manager" type="dock_manager" output="screen">
             <remap from="~dock" to="/$(arg robot_id)/dock"/>
             <param name="robot_id" type="str" value="$(arg robot_id)"/>
             <param name="rate" type="double" value="$(arg rate)"/>
-            <param name="cart_length" type="double" value="$(arg cart_length)"/>
         </node>
 	</group>
 </launch>

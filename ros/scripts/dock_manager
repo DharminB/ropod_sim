@@ -1,0 +1,107 @@
+#! /usr/bin/env python
+
+from __future__ import print_function
+
+import tf
+import math
+import rospy
+
+from std_msgs.msg import Bool, String
+from gazebo_msgs.msg import ModelStates
+
+class DockManager(object):
+
+    """TODO"""
+
+    def __init__(self):
+        self._robot_id = rospy.get_param('~robot_id', 'load')
+        self._ang_tolerance = rospy.get_param('~ang_tolerance', 0.5)
+        self._dist_tolerance = rospy.get_param('~dist_tolerance', 0.2)
+
+        self._docked = False
+        self._docked_cart_name = None
+        self._tf_br = tf.TransformBroadcaster()
+        self._tf_ls = tf.TransformListener()
+        self._pose_in_world = None
+        self._cart_pose_in_world = None
+        self._listening_to_model_states = False
+        self._cart_names = []
+
+        rospy.Subscriber('~dock', Bool, self._dock_cb)
+        rospy.Subscriber('/gazebo/model_states', ModelStates, self._model_states_cb)
+        rospy.set_param('/' + self._robot_id + '/docked', False)
+        rospy.loginfo('Initialised')
+
+    def _dock_cb(self, msg):
+        self._docked = msg.data
+        rospy.set_param('/' + self._robot_id + '/docked', self._docked)
+
+        if self._docked:
+            self._listening_to_model_states = True
+            rospy.sleep(1.0)
+            self._listening_to_model_states = False
+
+            cart_name = self._get_valid_cart()
+            if cart_name is None:
+                rospy.logerr("No nearby carts found")
+                return
+            self._docked_cart_name = cart_name
+            self._pub_to_docked_cart(self._robot_id)
+
+        else:
+            self._pub_to_docked_cart()
+            self._docked_cart_name = None
+
+    def _model_states_cb(self, msg):
+        if not self._listening_to_model_states:
+            return
+        self_index = msg.name.index(self._robot_id)
+        self._cart_names = [name for name in msg.name if 'cart' in name.lower()]
+
+    def _get_valid_cart(self):
+        for cart_name in self._cart_names:
+            transform = None
+            for i in range(10):
+                transform = self._get_tf(self._robot_id + '/gripper_link',
+                                         cart_name + '/gripping_link')
+                if transform is not None:
+                    break
+                rospy.sleep(0.5)
+            if transform is None:
+                continue
+
+            if abs(transform[3]) < self._ang_tolerance and \
+               abs(transform[4]) < self._ang_tolerance and \
+               abs(transform[5]) < self._ang_tolerance and \
+               (transform[0]**2 + transform[1]**2 + transform[2]**2)**0.5 < self._dist_tolerance:
+                   return cart_name
+
+    def _pub_to_docked_cart(self, string=''):
+        if self._docked_cart_name is None:
+            rospy.logwarn('Name of docked cart is not available')
+            return
+        topic_name = '/' + self._docked_cart_name + '/docked_robot'
+        pub = rospy.Publisher(topic_name, String, queue_size=1)
+        rospy.loginfo('Publishing to ' + topic_name)
+        rospy.sleep(0.5)
+        pub.publish(String(data=string))
+        rospy.sleep(1.0)
+        rospy.loginfo('Published')
+
+    def _get_tf(self, robot_gripper_link, cart_gripping_link):
+        try:
+            trans, rot = self._tf_ls.lookupTransform(robot_gripper_link,
+                                                     cart_gripping_link,
+                                                     rospy.Time(0))
+            roll, pitch, yaw = tf.transformations.euler_from_quaternion(rot)
+            transform = (trans[0], trans[1], trans[2], roll, pitch, yaw)
+        except Exception as e:
+            rospy.logerr(str(e))
+            transform = None
+        return transform
+
+if __name__ == "__main__":
+    rospy.init_node('dock_manager')
+    DM = DockManager()
+    rospy.spin()
+    rospy.loginfo('Exiting')
