@@ -1,4 +1,4 @@
-<?xml version='1.0'?>
+<?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="ropod" >
 
     <xacro:property name="namespace" value="$(arg namespace)"/>
@@ -59,27 +59,27 @@
         </gazebo>
     </xacro:macro>
 
-    <link name='base_link' />
+    <link name="base_link" />
 
-    <joint name='base_body_joint' type='fixed'>
-        <origin xyz='0.0 0.0 ${wheel_radius*2 + base_thickness*0.5}' rpy='0 0 0'/>
-        <parent link='base_link'/>
-        <child link='base_body_link'/>
+    <joint name="base_body_joint" type="fixed">
+        <origin xyz="0.0 0.0 ${wheel_radius*2 + base_thickness*0.5}" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="base_body_link"/>
     </joint>
 
-    <link name='base_body_link'>
+    <link name="base_body_link">
         <visual>
             <geometry>
                 <box size="${base_length} ${base_length} ${base_thickness}"/>
             </geometry>
-            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
             <material name="silver"/>
         </visual>      
         <collision>
             <geometry>
                 <box size="${base_length} ${base_length} ${base_thickness}"/>
             </geometry>
-            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
         </collision>      
         <inertial>
           <mass value="${base_mass}"/>
@@ -97,50 +97,50 @@
     <!-- ====== -->
     <xacro:ropod_wheel name="left_rear_wheel" parent="base_body" mass="${wheel_mass}"
                        radius="${wheel_radius}" material_name="black">
-        <origin xyz='${-base_length*0.5 + wheel_radius} ${base_length*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+        <origin xyz="${-base_length*0.5 + wheel_radius} ${base_length*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}" rpy="0 0 0"/>
     </xacro:ropod_wheel>
 
 
     <xacro:ropod_wheel name="right_rear_wheel" parent="base_body" mass="${wheel_mass}"
                        radius="${wheel_radius}" material_name="black">
-        <origin xyz='${-base_length*0.5 + wheel_radius} ${-base_length*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+        <origin xyz="${-base_length*0.5 + wheel_radius} ${-base_length*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}" rpy="0 0 0"/>
     </xacro:ropod_wheel>
 
 
     <xacro:ropod_wheel name="left_front_wheel" parent="base_body" mass="${wheel_mass}"
                        radius="${wheel_radius}" material_name="black">
-        <origin xyz='${base_length*0.5 - wheel_radius} ${base_length*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+        <origin xyz="${base_length*0.5 - wheel_radius} ${base_length*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}" rpy="0 0 0"/>
     </xacro:ropod_wheel>
 
 
     <xacro:ropod_wheel name="right_front_wheel" parent="base_body" mass="${wheel_mass}" 
                        radius="${wheel_radius}" material_name="black">
-        <origin xyz='${base_length*0.5 - wheel_radius} ${-base_length*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+        <origin xyz="${base_length*0.5 - wheel_radius} ${-base_length*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}" rpy="0 0 0"/>
     </xacro:ropod_wheel>
 
 
     <!-- ======= -->
     <!-- GRIPPER -->
     <!-- ======= -->
-    <joint name='gripper_joint' type='fixed'>
-        <origin xyz='${-base_length*0.5} 0.0 ${wheel_radius*2}' rpy='0 0 0'/>
-        <parent link='base_link'/>
-        <child link='gripper_link'/>
+    <joint name="gripper_joint" type="fixed">
+        <origin xyz="${-base_length*0.5} 0.0 ${wheel_radius*2}" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="gripper_link"/>
     </joint>
 
-    <link name='gripper_link'>
+    <link name="gripper_link">
         <visual>
             <geometry>
                 <box size="${0.01} ${0.01} ${0.01}"/>
             </geometry>
-            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
             <material name="silver"/>
         </visual>      
         <collision>
             <geometry>
                 <box size="${0.01} ${0.01} ${0.01}"/>
             </geometry>
-            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
         </collision>      
     </link>
     
@@ -149,7 +149,7 @@
     <!-- ===== -->
     <xacro:hokuyo name="front_laser" parent="base_body" namespace="${namespace}"
                   ros_topic="scan" update_rate="20" min_angle="-2.36" max_angle="2.36">
-        <origin xyz='0.25 0.0 0.08' rpy='0 0 0'/>
+        <origin xyz="0.25 0.0 0.08" rpy="0 0 0"/>
     </xacro:hokuyo>
 
 
@@ -170,22 +170,22 @@
     <!-- ========== -->
     <!-- DECORATION -->
     <!-- ========== -->
-    <joint name='computer_joint' type='fixed'>
-        <origin xyz='0.0 0.0 0.1' rpy='0 0 0'/>
-        <parent link='base_body_link'/>
-        <child link='computer_link'/>
+    <joint name="computer_joint" type="fixed">
+        <origin xyz="0.0 0.0 0.1" rpy="0 0 0"/>
+        <parent link="base_body_link"/>
+        <child link="computer_link"/>
     </joint>
 
-    <link name='computer_link'>
+    <link name="computer_link">
         <visual>
             <geometry>
-                <box size='0.2 0.3 0.1'/>
+                <box size="0.2 0.3 0.1"/>
             </geometry>
             <material name="black"/>
         </visual>
         <collision>
             <geometry>
-                <box size='0.01 0.01 0.01'/>
+                <box size="0.01 0.01 0.01"/>
             </geometry>
         </collision>
     </link>

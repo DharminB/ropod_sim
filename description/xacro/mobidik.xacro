@@ -1,4 +1,4 @@
-<?xml version='1.0'?>
+<?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="mobidik" >
 
     <xacro:arg name="namespace" default="ropod"/>
@@ -11,6 +11,7 @@
     <xacro:property name="cargo_width" value="0.7" />
     <xacro:property name="cargo_height" value="1.0" />
     <xacro:property name="wheel_radius" value="0.04" />
+    <xacro:property name="marker_length" value="0.2" />
     <xacro:property name="wheel_mass" value="1.0" />
     <xacro:property name="base_mass" value="8.0" />
     <xacro:property name="inertia_base" value="0.5" />
@@ -26,6 +27,10 @@
 
     <material name="brown">
         <color rgba="0.8 0.52 0.25 1.0"/>
+    </material>
+
+    <material name="white">
+        <color rgba="1.0 1.0 1.0 1.0"/>
     </material>
 
     <xacro:macro name="sphere_inertia" params="mass radius">
@@ -63,27 +68,51 @@
         </gazebo>
     </xacro:macro>
 
-    <link name='base_link' />
+    <xacro:macro name="aruco_marker" params="name parent *origin length gazebo_material_name">
+        <joint name="${name}_joint" type="fixed">
+            <xacro:insert_block name="origin" />
+            <parent link="${parent}_link"/>
+            <child link="${name}_link"/>
+        </joint>
+        <link name="${name}_link">
+            <visual>
+                <geometry>
+                    <box size="0.0001 ${marker_length} ${marker_length}"/>
+                </geometry>
+                <material name="white"/>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="0.0001 ${marker_length} ${marker_length}"/>
+                </geometry>
+            </collision>
+        </link>
+        <gazebo reference="${name}_link">
+            <material>${gazebo_material_name}</material>
+        </gazebo>
+    </xacro:macro>
 
-    <joint name='base_body_joint' type='fixed'>
-        <origin xyz='0.0 0.0 ${wheel_radius*2 + base_thickness*0.5}' rpy='0 0 0'/>
-        <parent link='base_link'/>
-        <child link='base_body_link'/>
+    <link name="base_link" />
+
+    <joint name="base_body_joint" type="fixed">
+        <origin xyz="0.0 0.0 ${wheel_radius*2 + base_thickness*0.5}" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="base_body_link"/>
     </joint>
 
-    <link name='base_body_link'>
+    <link name="base_body_link">
         <visual>
             <geometry>
                 <box size="${base_length} ${base_width} ${base_thickness}"/>
             </geometry>
-            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
             <material name="red"/>
         </visual>      
         <collision>
             <geometry>
                 <box size="${base_length} ${base_width} ${base_thickness}"/>
             </geometry>
-            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
         </collision>      
         <inertial>
           <mass value="${base_mass}"/>
@@ -101,46 +130,46 @@
     <!-- ====== -->
     <xacro:cart_wheel name="left_rear_wheel" parent="base_body" mass="${wheel_mass}"
                        radius="${wheel_radius}" material_name="black">
-        <origin xyz='${-base_length*0.5 + wheel_radius} ${base_width*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+        <origin xyz="${-base_length*0.5 + wheel_radius} ${base_width*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}" rpy="0 0 0"/>
     </xacro:cart_wheel>
 
     <xacro:cart_wheel name="right_rear_wheel" parent="base_body" mass="${wheel_mass}"
                        radius="${wheel_radius}" material_name="black">
-        <origin xyz='${-base_length*0.5 + wheel_radius} ${-base_width*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+        <origin xyz="${-base_length*0.5 + wheel_radius} ${-base_width*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}" rpy="0 0 0"/>
     </xacro:cart_wheel>
 
     <xacro:cart_wheel name="left_front_wheel" parent="base_body" mass="${wheel_mass}"
                        radius="${wheel_radius}" material_name="black">
-        <origin xyz='${base_length*0.5 - wheel_radius} ${base_width*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+        <origin xyz="${base_length*0.5 - wheel_radius} ${base_width*0.5 - wheel_radius} ${-base_thickness*0.5 - wheel_radius}" rpy="0 0 0"/>
     </xacro:cart_wheel>
 
     <xacro:cart_wheel name="right_front_wheel" parent="base_body" mass="${wheel_mass}" 
                        radius="${wheel_radius}" material_name="black">
-        <origin xyz='${base_length*0.5 - wheel_radius} ${-base_width*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}' rpy='0 0 0'/>
+        <origin xyz="${base_length*0.5 - wheel_radius} ${-base_width*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}" rpy="0 0 0"/>
     </xacro:cart_wheel>
 
     <!-- ======= -->
     <!-- GRIPPER -->
     <!-- ======= -->
-    <joint name='gripping_joint' type='fixed'>
-        <origin xyz='${base_length*0.5} 0.0 ${wheel_radius*2}' rpy='0 0 0'/>
-        <parent link='base_link'/>
-        <child link='gripping_link'/>
+    <joint name="gripping_joint" type="fixed">
+        <origin xyz="${base_length*0.5} 0.0 ${wheel_radius*2}" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="gripping_link"/>
     </joint>
 
-    <link name='gripping_link'>
+    <link name="gripping_link">
         <visual>
             <geometry>
                 <box size="${0.01} ${0.01} ${0.01}"/>
             </geometry>
-            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
             <material name="red"/>
         </visual>      
         <collision>
             <geometry>
                 <box size="${0.01} ${0.01} ${0.01}"/>
             </geometry>
-            <origin xyz='0.0 0.0 0.0' rpy='0.0 0.0 0.0' />
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
         </collision>      
     </link>
     
@@ -148,22 +177,22 @@
     <!-- ===== -->
     <!-- CARGO -->
     <!-- ===== -->
-    <joint name='cargo_joint' type='fixed'>
-        <origin xyz='0.0 0.0 ${cargo_height*0.5 + base_thickness*0.5}' rpy='0 0 0'/>
-        <parent link='base_body_link'/>
-        <child link='cargo_link'/>
+    <joint name="cargo_joint" type="fixed">
+        <origin xyz="0.0 0.0 ${cargo_height*0.5 + base_thickness*0.5}" rpy="0 0 0"/>
+        <parent link="base_body_link"/>
+        <child link="cargo_link"/>
     </joint>
 
-    <link name='cargo_link'>
+    <link name="cargo_link">
         <visual>
             <geometry>
-                <box size='${cargo_length} ${cargo_width} ${cargo_height}'/>
+                <box size="${cargo_length} ${cargo_width} ${cargo_height}"/>
             </geometry>
             <material name="brown"/>
         </visual>
         <collision>
             <geometry>
-                <box size='${cargo_length} ${cargo_width} ${cargo_height}'/>
+                <box size="${cargo_length} ${cargo_width} ${cargo_height}"/>
             </geometry>
         </collision>
     </link>
@@ -171,5 +200,25 @@
     <gazebo reference="cargo_link">
         <material>Gazebo/WoodPallet</material>
     </gazebo>
+
+
+    <!-- ============= -->
+    <!-- ARUCO MARKERS -->
+    <!-- ============= -->
+    <xacro:aruco_marker name="front_aruco" parent="base" length="${marker_length}" gazebo_material_name="Marker0">
+        <origin xyz="${(cargo_length*0.5) + 0.01} 0.0 ${wheel_radius*2 + base_thickness + marker_length*0.5 + 0.05}" rpy="0 0 0"/>
+    </xacro:aruco_marker>
+
+    <xacro:aruco_marker name="left_aruco" parent="base" length="${marker_length}" gazebo_material_name="Marker1">
+        <origin xyz="0.0 ${(cargo_width*0.5) + 0.01} ${wheel_radius*2 + base_thickness + marker_length*0.5 + 0.05}" rpy="0 0 ${pi/2}"/>
+    </xacro:aruco_marker>
+
+    <xacro:aruco_marker name="rear_aruco" parent="base" length="${marker_length}" gazebo_material_name="Marker2">
+        <origin xyz="${-(cargo_length*0.5) - 0.01} 0.0 ${wheel_radius*2 + base_thickness + marker_length*0.5 + 0.05}" rpy="0 0 ${pi}"/>
+    </xacro:aruco_marker>
+
+    <xacro:aruco_marker name="right_aruco" parent="base" length="${marker_length}" gazebo_material_name="Marker3">
+        <origin xyz="0.0 ${-(cargo_width*0.5) - 0.01} ${wheel_radius*2 + base_thickness + marker_length*0.5 + 0.05}" rpy="0 0 ${-pi/2}"/>
+    </xacro:aruco_marker>
 
 </robot>
