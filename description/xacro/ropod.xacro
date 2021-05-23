@@ -13,6 +13,7 @@
     <xacro:property name="inertia_wheels" value="0.001" />
 
     <xacro:include filename="$(find ropod_sim)/description/xacro/hokuyo.xacro" />
+    <xacro:include filename="$(find ropod_sim)/description/xacro/realsense_d435.xacro" />
 
     <material name="silver">
         <color rgba="0.6 0.6 0.6 1.0"/>
@@ -152,6 +153,9 @@
         <origin xyz="0.25 0.0 0.08" rpy="0 0 0"/>
     </xacro:hokuyo>
 
+    <xacro:realsense_d435 name="realsense_front" parent="base_link" namespace="${namespace}">
+        <origin xyz="0.3 0.0 0.15" rpy="0.0 0.0 0.0"/>
+    </xacro:realsense_d435>
 
     <!-- ====================== -->
     <!-- HOLONOMIC DRIVE PLUGIN -->
