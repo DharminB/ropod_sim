@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="robot_id" value="load" />
+    <arg name="robot_id" value="/ropod" />
 
     <arg name="paused" default="false"/>
     <arg name="use_sim_time" default="true"/>
@@ -8,7 +8,7 @@
     <arg name="debug" default="false"/>
     <arg name="start_rviz" default="true"/>
 
-    <arg name="global_frame" default="/$(arg robot_id)/odom"/>
+    <arg name="global_frame" default="$(arg robot_id)/odom"/>
 
     <arg name="world_model_name" default="hall"/>
 

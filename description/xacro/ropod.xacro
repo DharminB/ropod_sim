@@ -169,11 +169,11 @@
     <!-- ====================== -->
     <gazebo>
         <plugin name="${namespace}_controller" filename="libropod_control_plugin.so">
-            <commandTopic>/${namespace}/cmd_vel</commandTopic>
-            <odometryTopic>/${namespace}/odom</odometryTopic>
-            <odometryFrame>/${namespace}/odom</odometryFrame>
+            <commandTopic>${namespace}/cmd_vel</commandTopic>
+            <odometryTopic>${namespace}/odom</odometryTopic>
+            <odometryFrame>${namespace}/odom</odometryFrame>
             <odometryRate>20.0</odometryRate>
-            <robotBaseFrame>/${namespace}/base_link</robotBaseFrame>
+            <robotBaseFrame>${namespace}/base_link</robotBaseFrame>
         </plugin>
     </gazebo>
 

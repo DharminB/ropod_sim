@@ -18,6 +18,8 @@ class CartManager(object):
         self._y = rospy.get_param('~init_y', 0.0)
         self._theta = rospy.get_param('~init_theta', 0.0)
         self._global_frame = rospy.get_param('~global_frame', 'map')
+        if self._global_frame[0:2] == "//":
+            self._global_frame = self._global_frame[1:]
         self._frame = rospy.get_param('~frame', '/cart/base_link')
         self._cart_robot_dist = rospy.get_param('~cart_robot_dist', 0.9)
         self._cart_id = rospy.get_param('~cart_id', 'cart')
@@ -33,19 +35,14 @@ class CartManager(object):
         rospy.loginfo('Initialised')
 
     def _docked_robot_cb(self, msg):
-        if msg.data == '':
-            robot_pos = self._get_robot_pose_from_tf()
-            if robot_pos is None:
-                rospy.logwarn('Could not get robot pose. Cart transform might be incorrect')
-                return
-            delta_x = (math.cos(robot_pos[2]) * -self._cart_robot_dist)
-            delta_y = (math.sin(robot_pos[2]) * -self._cart_robot_dist)
-            self._x = robot_pos[0] + delta_x
-            self._y = robot_pos[1] + delta_y
-            self._theta = robot_pos[2]
+        if msg.data == '': # undocked from robot
             self._docked_robot = None
-        else:
+            self._docked_robot_base_link = None
+        else: # docked to robot
             self._docked_robot = msg.data
+            self._docked_robot_base_link = self._docked_robot + "/base_link"
+            if self._docked_robot_base_link[0:2] == "//":
+                self._docked_robot_base_link = self._docked_robot_base_link[1:]
             rospy.loginfo('Docked to ' + self._docked_robot)
 
     def update(self, event):
@@ -53,7 +50,7 @@ class CartManager(object):
             pos = [-self._cart_robot_dist, 0.0, 0.0]
             ori = [0.0, 0.0, 0.0, 1.0]
             self._tf_br.sendTransform(pos, ori, rospy.Time.now(), self._frame,
-                                      self._docked_robot + '/base_link')
+                                      self._docked_robot_base_link)
             model_state_msg = ModelState(model_name=self._cart_id,
                                          reference_frame=self._docked_robot)
             model_state_msg.pose.position.x = - self._cart_robot_dist
@@ -66,7 +63,7 @@ class CartManager(object):
     def _get_robot_pose_from_tf(self):
         try:
             trans, rot = self._tf_ls.lookupTransform(self._global_frame,
-                                                     self._docked_robot + '/base_link',
+                                                     self._docked_robot_base_link,
                                                      rospy.Time(0))
             _, _, yaw = tf.transformations.euler_from_quaternion(rot)
             curr_pos = (trans[0], trans[1], yaw)
@@ -88,13 +85,9 @@ class CartManager(object):
                 (pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w))
         return (pose.position.x, pose.position.y, theta)
 
-
-
 if __name__ == "__main__":
     rospy.init_node('cart_manager')
     CM = CartManager()
     rospy.Timer(rospy.Duration(0.1), CM.update)
     rospy.spin()
     rospy.loginfo('Exiting')
-
-        

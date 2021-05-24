@@ -14,7 +14,7 @@ class DockManager(object):
     """TODO"""
 
     def __init__(self):
-        self._robot_id = rospy.get_param('~robot_id', 'load')
+        self._robot_id = rospy.get_param('~robot_id', 'ropod')
         self._ang_tolerance = rospy.get_param('~ang_tolerance', 0.5)
         self._dist_tolerance = rospy.get_param('~dist_tolerance', 0.2)
 
@@ -26,15 +26,18 @@ class DockManager(object):
         self._cart_pose_in_world = None
         self._listening_to_model_states = False
         self._cart_names = []
+        self._docked_param_name = self._robot_id + '/docked'
+        if self._docked_param_name[0:2] == "//":
+            self._docked_param_name = self._docked_param_name[1:]
 
         rospy.Subscriber('~dock', Bool, self._dock_cb)
         rospy.Subscriber('/gazebo/model_states', ModelStates, self._model_states_cb)
-        rospy.set_param('/' + self._robot_id + '/docked', False)
+        rospy.set_param(self._docked_param_name, False)
         rospy.loginfo('Initialised')
 
     def _dock_cb(self, msg):
         self._docked = msg.data
-        rospy.set_param('/' + self._robot_id + '/docked', self._docked)
+        rospy.set_param(self._docked_param_name, self._docked)
 
         if self._docked:
             self._listening_to_model_states = True
@@ -89,6 +92,8 @@ class DockManager(object):
         rospy.loginfo('Published')
 
     def _get_tf(self, robot_gripper_link, cart_gripping_link):
+        if robot_gripper_link[0:2] == "//":
+            robot_gripper_link = robot_gripper_link[1:]
         try:
             trans, rot = self._tf_ls.lookupTransform(robot_gripper_link,
                                                      cart_gripping_link,
