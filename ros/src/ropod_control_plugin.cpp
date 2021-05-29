@@ -74,6 +74,7 @@ namespace gazebo
             std::string odometry_frame_;
             std::string robot_base_frame_;
             double odometry_rate_;
+            double cmd_vel_timeout_;
 
             // command velocity callback
             void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& cmd_msg);
@@ -179,6 +180,18 @@ namespace gazebo
             odometry_rate_ = sdf->GetElement("odometryRate")->Get<double>();
         }
 
+        cmd_vel_timeout_ = 0.2;
+        if (!sdf->HasElement("cmdVelTimeout"))
+        {
+            ROS_WARN_NAMED("kelo_control_plugin", "KeloControlPlugin (ns = %s) missing <cmdVelTimeout>, "
+                    "defaults to %f",
+                    robot_namespace_.c_str(), cmd_vel_timeout_);
+        }
+        else
+        {
+            cmd_vel_timeout_ = sdf->GetElement("cmdVelTimeout")->Get<double>();
+        }
+
 #if GAZEBO_MAJOR_VERSION >= 8
         last_odom_publish_time_ = parent_->GetWorld()->SimTime();
         last_cmd_msg_time_ = parent_->GetWorld()->SimTime();
@@ -225,14 +238,20 @@ namespace gazebo
 #if GAZEBO_MAJOR_VERSION >= 8
         ignition::math::Pose3d pose = parent_->WorldPose();
         common::Time current_time = parent_->GetWorld()->SimTime();
+        double linear_vel_z = parent_->WorldLinearVel().Z();
+        double angular_vel_x = parent_->WorldAngularVel().X();
+        double angular_vel_y = parent_->WorldAngularVel().Y();
 #else
         ignition::math::Pose3d pose = parent_->GetWorldPose().Ign();
         common::Time current_time = parent_->GetWorld()->GetSimTime();
+        double linear_vel_z = parent_->GetWorldLinearVel().z;
+        double angular_vel_x = parent_->GetWorldAngularVel().x;
+        double angular_vel_y = parent_->GetWorldAngularVel().y;
 #endif
         float yaw = pose.Rot().Yaw();
         double seconds_since_last_cmd_msg =
             (current_time - last_cmd_msg_time_).Double();
-        if (seconds_since_last_cmd_msg > 0.2)
+        if (seconds_since_last_cmd_msg > cmd_vel_timeout_)
         {
             x_ = 0.0;
             y_ = 0.0;
@@ -241,8 +260,8 @@ namespace gazebo
         parent_->SetLinearVel(ignition::math::Vector3d(
                     x_ * cosf(yaw) - y_ * sinf(yaw),
                     y_ * cosf(yaw) + x_ * sinf(yaw),
-                    0));
-        parent_->SetAngularVel(ignition::math::Vector3d(0, 0, rot_));
+                    linear_vel_z));
+        parent_->SetAngularVel(ignition::math::Vector3d(angular_vel_x, angular_vel_y, rot_));
         if (odometry_rate_ > 0.0) {
             double seconds_since_last_update =
                 (current_time - last_odom_publish_time_).Double();
