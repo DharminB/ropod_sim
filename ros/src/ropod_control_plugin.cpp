@@ -183,7 +183,7 @@ namespace gazebo
         cmd_vel_timeout_ = 0.2;
         if (!sdf->HasElement("cmdVelTimeout"))
         {
-            ROS_WARN_NAMED("kelo_control_plugin", "KeloControlPlugin (ns = %s) missing <cmdVelTimeout>, "
+            ROS_WARN_NAMED("ropod_control_plugin", "RopodControlPlugin (ns = %s) missing <cmdVelTimeout>, "
                     "defaults to %f",
                     robot_namespace_.c_str(), cmd_vel_timeout_);
         }
