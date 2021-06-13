@@ -36,10 +36,7 @@ class DockManager(object):
         rospy.loginfo('Initialised')
 
     def _dock_cb(self, msg):
-        self._docked = msg.data
-        rospy.set_param(self._docked_param_name, self._docked)
-
-        if self._docked:
+        if msg.data:
             self._listening_to_model_states = True
             rospy.sleep(1.0)
             self._listening_to_model_states = False
@@ -50,10 +47,14 @@ class DockManager(object):
                 return
             self._docked_cart_name = cart_name
             self._pub_to_docked_cart(self._robot_id)
+            self._docked = True
+            rospy.set_param(self._docked_param_name, self._docked)
 
         else:
             self._pub_to_docked_cart()
             self._docked_cart_name = None
+            self._docked = False
+            rospy.set_param(self._docked_param_name, self._docked)
 
     def _model_states_cb(self, msg):
         if not self._listening_to_model_states:
