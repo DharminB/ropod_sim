@@ -30,8 +30,8 @@ class DockManager(object):
         if self._docked_param_name[0:2] == "//":
             self._docked_param_name = self._docked_param_name[1:]
 
-        rospy.Subscriber('~dock', Bool, self._dock_cb)
-        rospy.Subscriber('/gazebo/model_states', ModelStates, self._model_states_cb)
+        rospy.Subscriber('~dock', Bool, self._dock_cb, queue_size=1)
+        rospy.Subscriber('/gazebo/model_states', ModelStates, self._model_states_cb, queue_size=1)
         rospy.set_param(self._docked_param_name, False)
         rospy.loginfo('Initialised')
 
