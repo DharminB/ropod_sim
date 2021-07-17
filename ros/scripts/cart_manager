@@ -21,7 +21,7 @@ class CartManager(object):
         if self._global_frame[0:2] == "//":
             self._global_frame = self._global_frame[1:]
         self._frame = rospy.get_param('~frame', '/cart/base_link')
-        self._cart_robot_dist = rospy.get_param('~cart_robot_dist', 0.9)
+        self._cart_robot_dist = rospy.get_param('~cart_robot_dist', 0.75)
         self._cart_id = rospy.get_param('~cart_id', 'cart')
 
         self._docked_robot = None

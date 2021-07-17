@@ -4,11 +4,11 @@
     <xacro:arg name="namespace" default="ropod"/>
     <xacro:property name="namespace" value="$(arg namespace)"/>
 
-    <xacro:property name="base_length" value="1.1" />
-    <xacro:property name="base_width" value="0.8" />
+    <xacro:property name="base_length" value="0.8" />
+    <xacro:property name="base_width" value="0.72" />
     <xacro:property name="base_thickness" value="0.1" />
-    <xacro:property name="cargo_length" value="1.0" />
-    <xacro:property name="cargo_width" value="0.7" />
+    <xacro:property name="cargo_length" value="0.7" />
+    <xacro:property name="cargo_width" value="0.6" />
     <xacro:property name="cargo_height" value="1.0" />
     <xacro:property name="wheel_radius" value="0.04" />
     <xacro:property name="marker_length" value="0.2" />
