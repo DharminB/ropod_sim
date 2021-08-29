@@ -64,6 +64,7 @@ class MovingCylinderController(object):
         self._set_model_state_pub = rospy.Publisher('/gazebo/set_model_state', 
                                                     ModelState, queue_size=1)
 
+        self._active = True
         rospy.loginfo('Initialised')
 
     def _delete_models(self):
@@ -78,6 +79,8 @@ class MovingCylinderController(object):
             print(resp.status_message)
 
     def update(self, event):
+        if not self._active:
+            return
         for i in range(len(self._mc_info)):
             curr_x = self._mc_info[i]["current_pos"]["x"]
             curr_y = self._mc_info[i]["current_pos"]["y"]
@@ -110,6 +113,7 @@ class MovingCylinderController(object):
             self._set_model_state_pub.publish(model_state_msg)
 
     def sigint_handler(self, signum, frame):
+        self._active = False
         rospy.logwarn("SIGINT received.")
         self._delete_models()
         rospy.signal_shutdown("SIGINT received")
