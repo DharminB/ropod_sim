@@ -1,0 +1,21 @@
+- start_pos:
+      x: 0.0
+      y: -1.0
+  end_pos:
+      x: 1.0
+      y: -1.0
+  vel: 0.1
+- start_pos:
+      x: -1.0
+      y: 0.0
+  end_pos:
+      x: 1.0
+      y: 0.0
+  vel: 0.2
+- start_pos:
+      x: -1.0
+      y: 1.0
+  end_pos:
+      x: 1.0
+      y: 1.0
+  vel: 0.3

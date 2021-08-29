@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="mc_urdf_model_path" default="$(find ropod_sim)/description/xacro/moving_cylinder.urdf"/>
+    <arg name="mc_config_file_path" default="$(find ropod_sim)/ros/config/mc_config.yaml"/>
+    <arg name="rate" default="20.0" />
+
+    <node pkg="ropod_sim" name="moving_cylinder_controller" type="moving_cylinder_controller" output="screen">
+        <param name="model_path" type="str" value="$(arg mc_urdf_model_path)"/>
+        <param name="mc_config_file" type="str" value="$(arg mc_config_file_path)"/>
+        <param name="rate" type="double" value="$(arg rate)"/>
+        <param name="global_frame" type="str" value="world"/>
+    </node>
+
+
+</launch>

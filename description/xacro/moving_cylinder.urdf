@@ -1,0 +1,24 @@
+<robot name="moving_cylinder" >
+    <link name="moving_cylinder">
+        <inertial>
+            <origin xyz="0 0 0" />
+            <mass value="1.0" />
+            <inertia  ixx="1.0" ixy="0.0"  ixz="0.0"  iyy="100.0"  iyz="0.0"  izz="1.0" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.2" length="1.0"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.2" length="1.0"/>
+            </geometry>
+        </collision>
+    </link>
+    <gazebo reference="moving_cylinder">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+</robot>
