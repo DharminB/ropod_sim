@@ -1,5 +1,5 @@
 image: brsu.pgm
-resolution: 0.02
+resolution: 0.04
 origin: [-110, -4.574188705533743, 0.0]
 free_thresh: 0.1
 negate: 0
