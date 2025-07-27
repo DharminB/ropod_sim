@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <launch>
     <arg name="rate" default="5.0" />
 
@@ -8,34 +7,33 @@
     <arg name="robot_id" default="ropod" />
 
     <arg name="model" default="ropod"/>
-    <arg name="model_path" default="$(find ropod_sim)/description/xacro/$(arg model).xacro"/>
 
     <!-- Load the robot description from the urdf model -->
-	<group ns="$(arg robot_id)">
-        <param name="tf_prefix" value="$(arg robot_id)" />
-        <param name="robot_description"
-               command="rosrun xacro xacro '$(arg model_path)'
-                        namespace:=$(arg robot_id)" />
+    <let name="robot_description"
+        value="$(command 'xacro $(find-pkg-share ropod_sim)/description/xacro/$(var model).xacro')"/>
 
-        <node pkg="joint_state_publisher" name="joint_state_publisher"
-              type="joint_state_publisher">
-            <param name="rate" value="10"/>
-        </node>
+    <node pkg="robot_state_publisher" exec="robot_state_publisher" name="robot_state_publisher">
+        <param name="robot_description" value="$(var robot_description)"/>
+    </node>
 
-        <node pkg="robot_state_publisher" name="robot_state_publisher"
-              type="robot_state_publisher">
-            <param name="publish_frequency" value="10"/>
-        </node>
+    <!-- Spawn the robot using the arguments and robot description -->
+    <include file="$(find-pkg-share ros_gz_sim)/launch/gz_spawn_model.launch.py">
+        <arg name="world" value="empty"/>
+        <arg name="topic" value="/robot_description"/>
+        <arg name="entity_name" value="$(var robot_id)"/>
+        <arg name="allow_renaming" value="False"/>
+        <arg name="x" value="$(var init_x)"/>
+        <arg name="y" value="$(var init_y)"/>
+        <arg name="yaw" value="$(var init_theta)"/>
+    </include>
 
-        <!-- Spawn the robot using the arguments and robot description -->
-        <node pkg="gazebo_ros" name="spawn_urdf_model" type="spawn_model"
-              args="-param robot_description -urdf -model $(arg robot_id)
-                    -x $(arg init_x) -y $(arg init_y) -z 0.0 -Y $(arg init_theta)" />
+    <node pkg="ros_gz_bridge" exec="parameter_bridge" name="ros_gz_bridge_$(var robot_id)">
+        <param name="config_file" value="$(find-pkg-share ropod_sim)/config/bridge.yaml"/>
+    </node>
 
-        <node pkg="ropod_sim" name="dock_manager" type="dock_manager" output="screen">
-            <remap from="~dock" to="$(arg robot_id)/dock"/>
-            <param name="robot_id" type="str" value="$(arg robot_id)"/>
-            <param name="rate" type="double" value="$(arg rate)"/>
-        </node>
-	</group>
+    <!-- <node pkg="ropod_sim" name="dock_manager" type="dock_manager" output="screen"> -->
+    <!--     <remap from="~dock" to="$(arg robot_id)/dock"/> -->
+    <!--     <param name="robot_id" type="str" value="$(arg robot_id)"/> -->
+    <!--     <param name="rate" type="double" value="$(arg rate)"/> -->
+    <!-- </node> -->
 </launch>

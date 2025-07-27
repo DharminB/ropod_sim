@@ -1,0 +1,23 @@
+<launch>
+
+    <arg name="start_jsp" default="true" description="Start joint state publisher"/>
+    <arg name="start_rviz" default="true" description="Start RViz"/>
+
+    <let name="robot_description"
+        value="$(command 'xacro $(find-pkg-share ropod_sim)/description/xacro/ropod.xacro')"/>
+
+    <node pkg="robot_state_publisher" exec="robot_state_publisher" name="robot_state_publisher">
+        <param name="robot_description" value="$(var robot_description)"/>
+    </node>
+
+    <group if="$(var start_jsp)">
+        <node pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui"
+              name="joint_state_publisher" output="screen"/>
+    </group>
+
+    <group if="$(var start_rviz)">
+        <node pkg="rviz2" exec="rviz2" name="description_rviz"
+              args="-d $(find-pkg-share ipaintx_description)/rviz/model.rviz"/>
+    </group>
+
+</launch>

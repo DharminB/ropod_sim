@@ -1,31 +1,46 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.28.3)
 project(ropod_sim)
 
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++17)
 
-find_package(catkin REQUIRED COMPONENTS
-    gazebo_dev
-    gazebo_msgs
-    roscpp
-    rospy
-    geometry_msgs
-    sensor_msgs
-    nav_msgs
-    std_msgs
+find_package(ament_cmake REQUIRED)
+find_package(gz-cmake3 REQUIRED)
+find_package(gz-plugin2 REQUIRED COMPONENTS register)
+find_package(gz-common5 REQUIRED COMPONENTS profiler)
+find_package(gz-sim8 REQUIRED)
+
+# =========
+# LIBRARIES
+# =========
+add_library(HolonomicControl SHARED
+    src/HolonomicControl.cpp
+)
+target_include_directories(HolonomicControl PRIVATE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+target_link_libraries(HolonomicControl PRIVATE
+    gz-sim8::gz-sim8
 )
 
-find_package(Boost REQUIRED COMPONENTS thread)
-
-# catkin_python_setup()
-
-catkin_package(
+# =======
+# INSTALL
+# =======
+install(
+    DIRECTORY
+        launch
+        config
+        scripts
+        description
+        world_description
+    DESTINATION
+        share/${PROJECT_NAME}
+)
+install(
+    TARGETS
+        HolonomicControl
+    DESTINATION
+        lib/${PROJECT_NAME}
 )
 
-include_directories(
-    ${Boost_INCLUDE_DIRS}
-    ${catkin_INCLUDE_DIRS}
-    ${GAZEBO_INCLUDE_DIRS}
-)
-
-add_library(ropod_control_plugin ros/src/ropod_control_plugin.cpp)
-target_link_libraries(ropod_control_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
+ament_package()

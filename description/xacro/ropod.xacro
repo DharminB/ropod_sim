@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://ros.org/wiki/xacro" name="ropod" >
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ropod" >
 
     <xacro:property name="namespace" value="$(arg namespace)"/>
     <xacro:arg name="namespace" default="ropod"/>
@@ -13,7 +13,7 @@
     <xacro:property name="inertia_wheels" value="0.001" />
 
     <xacro:include filename="$(find ropod_sim)/description/xacro/hokuyo.xacro" />
-    <xacro:include filename="$(find ropod_sim)/description/xacro/realsense_d435.xacro" />
+    <!-- <xacro:include filename="$(find ropod_sim)/description/xacro/realsense_d435.xacro" /> -->
 
     <material name="silver">
         <color rgba="0.6 0.6 0.6 1.0"/>
@@ -56,7 +56,11 @@
         <gazebo reference="${name}_link">
             <mu1>0.0</mu1>
             <mu2>0.0</mu2>
-            <material>Gazebo/Black</material>
+            <material>
+                <ambient>0.0 0.0 0.0 1</ambient>
+                <diffuse>0.0 0.0 0.0 1</diffuse>
+                <specular>0.01 0.01 0.01 1</specular>
+            </material>
         </gazebo>
     </xacro:macro>
 
@@ -75,13 +79,13 @@
             </geometry>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
             <material name="silver"/>
-        </visual>      
+        </visual>
         <collision>
             <geometry>
                 <box size="${base_length} ${base_length} ${base_thickness}"/>
             </geometry>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-        </collision>      
+        </collision>
         <inertial>
           <mass value="${base_mass}"/>
           <inertia ixx="${inertia_base}" ixy="0.0" ixz="0.0" iyy="${inertia_base}" iyz="0.0" izz="${inertia_base}"/>
@@ -89,7 +93,11 @@
     </link>
 
     <gazebo reference="base_body_link">
-        <material>Gazebo/RustySteel</material>
+        <material>
+            <ambient>0.3 0.3 0.3 1</ambient>
+            <diffuse>0.7 0.7 0.7 1</diffuse>
+            <specular>0.01 0.01 0.01 1</specular>
+        </material>
     </gazebo>
 
 
@@ -114,7 +122,7 @@
     </xacro:ropod_wheel>
 
 
-    <xacro:ropod_wheel name="right_front_wheel" parent="base_body" mass="${wheel_mass}" 
+    <xacro:ropod_wheel name="right_front_wheel" parent="base_body" mass="${wheel_mass}"
                        radius="${wheel_radius}" material_name="black">
         <origin xyz="${base_length*0.5 - wheel_radius} ${-base_length*0.5 + wheel_radius} ${-base_thickness*0.5 - wheel_radius}" rpy="0 0 0"/>
     </xacro:ropod_wheel>
@@ -136,46 +144,56 @@
             </geometry>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
             <material name="silver"/>
-        </visual>      
+        </visual>
         <collision>
             <geometry>
                 <box size="${0.01} ${0.01} ${0.01}"/>
             </geometry>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-        </collision>      
+        </collision>
     </link>
-    
+
     <!-- ===== -->
     <!-- LASER -->
     <!-- ===== -->
-    <xacro:hokuyo name="front_laser" parent="base_body" namespace="${namespace}"
-                  ros_topic="scan" update_rate="20" min_angle="-2.36" max_angle="2.36">
+    <xacro:hokuyo name="front_laser" parent="base_body"
+                  topic="/scan" update_rate="20" min_angle="-2.36" max_angle="2.36">
         <origin xyz="0.25 0.0 0.08" rpy="0 0 0"/>
     </xacro:hokuyo>
 
     <!-- ========= -->
     <!-- 3D CAMERA -->
     <!-- ========= -->
-    <xacro:realsense_d435 name="realsense_front" parent="base_link" namespace="${namespace}">
-        <origin xyz="0.3 0.0 0.15" rpy="0.0 0.0 0.0"/>
-    </xacro:realsense_d435>
+    <!-- <xacro:realsense_d435 name="realsense_front" parent="base_link" namespace="${namespace}"> -->
+    <!--     <origin xyz="0.3 0.0 0.15" rpy="0.0 0.0 0.0"/> -->
+    <!-- </xacro:realsense_d435> -->
 
-    <xacro:realsense_d435 name="realsense_torso" parent="base_link" namespace="${namespace}">
-        <origin xyz="-0.1 0.0 1.0" rpy="0.0 1.0 ${pi}"/>
-    </xacro:realsense_d435>
+    <!-- <xacro:realsense_d435 name="realsense_torso" parent="base_link" namespace="${namespace}"> -->
+    <!--     <origin xyz="-0.1 0.0 1.0" rpy="0.0 1.0 ${pi}"/> -->
+    <!-- </xacro:realsense_d435> -->
 
     <!-- ====================== -->
     <!-- HOLONOMIC DRIVE PLUGIN -->
     <!-- ====================== -->
     <gazebo>
-        <plugin name="${namespace}_controller" filename="libropod_control_plugin.so">
-            <commandTopic>${namespace}/cmd_vel</commandTopic>
-            <odometryTopic>${namespace}/odom</odometryTopic>
-            <odometryFrame>${namespace}/odom</odometryFrame>
-            <odometryRate>20.0</odometryRate>
-            <robotBaseFrame>${namespace}/base_link</robotBaseFrame>
+        <plugin
+            name="ropod::HolonomicControl"
+            filename="HolonomicControl">
+            <cmd_vel_topic>cmd_vel</cmd_vel_topic>
+            <cmd_vel_timeout>0.2</cmd_vel_timeout>
+        </plugin>
+
+        <plugin
+            name="gz::sim::systems::OdometryPublisher"
+            filename="gz-sim-odometry-publisher-system">
+            <odom_frame>odom</odom_frame>
+            <robot_base_frame>base_link</robot_base_frame>
+            <odom_topic>/odom</odom_topic>
+            <tf_topic>/odom/tf</tf_topic>
+            <dimensions>2</dimensions>
         </plugin>
     </gazebo>
+
 
 
     <!-- ========== -->
@@ -200,9 +218,13 @@
             </geometry>
         </collision>
     </link>
-      
+
     <gazebo reference="computer_link">
-        <material>Gazebo/Black</material>
+        <material>
+            <ambient>0.0 0.0 0.0 1</ambient>
+            <diffuse>0.0 0.0 0.0 1</diffuse>
+            <specular>0.01 0.01 0.01 1</specular>
+        </material>
     </gazebo>
 
 </robot>
